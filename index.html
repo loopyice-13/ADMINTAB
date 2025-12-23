@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ADMIN • Aviator Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --neon:#00ffe1;
+  --bg:#020b10;
+  --card:#04161d;
+}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#061b24,#000);
+  font-family:monospace;
+  color:var(--neon);
+}
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+h2,h3,h4{
+  margin:6px 0;
+}
+.neon{
+  text-shadow:0 0 10px var(--neon);
+}
+.card{
+  background:linear-gradient(180deg,#04161d,#020b10);
+  border:1px solid #00ffe133;
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 0 30px #00ffe122;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:12px;
+  border:none;
+  background:#000;
+  color:var(--neon);
+  border:1px solid #00ffe144;
+}
+button{
+  cursor:pointer;
+  background:linear-gradient(45deg,#00ffe1,#00bcd4);
+  color:#000;
+  font-weight:bold;
+}
+.hidden{display:none}
+
+/* Tabs */
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.tab{
+  padding:10px 18px;
+  border-radius:14px;
+  background:#02131a;
+  cursor:pointer;
+}
+.tab.active{
+  background:var(--neon);
+  color:#000;
+}
+
+/* User */
+.user{
+  border:1px solid #00ffe133;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:14px;
+}
+
+/* Key rows */
+.key-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 0;
+  font-size:13px;
+}
+
+/* Status dots */
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  display:inline-block;
+}
+.green{
+  background:#00ff6a;
+  box-shadow:0 0 8px #00ff6a;
+}
+.red{
+  background:#ff3333;
+  box-shadow:0 0 8px #ff3333;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 class="neon">👑 AVIATOR ADMIN CONTROL</h2>
+
+<!-- LOGIN -->
+<div class="card" id="login">
+  <h3>🔐 Admin Login</h3>
+  <input id="adminKey" placeholder="Enter Admin Key">
+  <button onclick="login()">Access Panel</button>
+</div>
+
+<!-- MAIN -->
+<div id="main" class="hidden">
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('users')">👤 USERS</div>
+    <div class="tab" onclick="showTab('keys')">🔑 KEYS STATUS</div>
+  </div>
+
+  <!-- USERS TAB -->
+  <div id="users"></div>
+
+  <!-- KEYS TAB -->
+  <div id="keys" class="hidden">
+
+    <div class="card">
+      <h3 class="neon">💎 Lifetime Keys</h3>
+      <div id="lifeKeys"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="neon">📅 Monthly Keys</h3>
+      <div id="monthKeys"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="neon">⏱ Weekly Keys</h3>
+      <div id="weekKeys"></div>
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+<script>
+/* ================= ADMIN KEY ================= */
+const ADMIN_KEY = "LOOPYICEVIP";
+
+/* ================= ALL VIP KEYS ================= */
+const KEYS = {
+  lifetime: [
+"L1X7-B6P9-KF4J-7R1T","L2M8-Q7F1-9K3L-R5T2","L3N9-P4K8-F7R1-T2M5",
+"L4P1-K9T3-R5F8-M6L2","L5Q3-R1M7-K6F2-P8T4","L6R7-F3L5-P9T2-K1M8",
+"L7S2-K8P4-R3M9-T5F1","L8T4-P7F1-K2R6-M3L9","L9U1-R5K2-F8M3-T4P7",
+"L0V6-P3T8-K9L2-F5R1","L1W9-K4R7-M2P1-T8F3","L2X3-R6M1-F5K9-P7T2",
+"L3Y7-P2L8-K1R5-T6F4","L4Z2-K5F3-R9M4-P1T8","L5A1-P6K2-F7T3-R4M9"
+  ],
+  monthly: [
+"M1H8-T3K9-L2R5-P9Q4","M2J4-K8R2-P7F1-Q3L5","M3K7-R5T1-L9P3-F8M2",
+"M4L2-P9K4-R1M8-T6F3","M5M3-F2R6-K8T1-L7P6","M6N9-K1L5-P3R7-T4F8",
+"M7P1-T8F3-L6K2-R9M5","M8Q4-R7M2-P1K6-F3L9","M9R5-L3T9-K2F8-P4M7",
+"M0S8-P6K3-R4L1-T5F2"
+  ],
+  weekly: [
+"W1A9-Q2K8-R3T4-F7M1","W2B7-F9K3-Q8M4-6R2X","W3C4-R8K2-M1F7-P9T3",
+"W4D8-P7L3-F2K5-R6Q1","W5E1-K4R9-M7T2-F8P6","W6F3-T1M8-R5K4-Q7L2",
+"W7G9-L2F6-P8R1-T3K4","W8H2-R3M5-K9T4-Q6F7",
+"W9J5-P1K7-R4L8-T2M9","W0K8-F6R3-M2P9-Q1T5"
+  ]
+};
+
+/* ================= LOGIN ================= */
+function login(){
+  if(document.getElementById("adminKey").value === ADMIN_KEY){
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("main").classList.remove("hidden");
+    loadUsers();
+    loadKeys();
+  } else alert("❌ Invalid Admin Key");
+}
+
+/* ================= TABS ================= */
+function showTab(id){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll("#users,#keys").forEach(d=>d.classList.add("hidden"));
+  document.querySelector(`[onclick*='${id}']`).classList.add("active");
+  document.getElementById(id).classList.remove("hidden");
+}
+
+/* ================= USERS ================= */
+function loadUsers(){
+  const box=document.getElementById("users");
+  box.innerHTML="";
+
+  const profile=JSON.parse(localStorage.getItem("profile")||"null");
+  if(!profile || !profile.tg){
+    box.innerHTML="<div class='card'>No users found</div>";
+    return;
+  }
+
+  box.innerHTML=`
+    <div class="card user">
+      <h3 class="neon">@${profile.tg}</h3>
+      <p>🌐 Site: ${profile.site||"-"}</p>
+      <p>🎫 Bet ID: ${profile.bet||"-"}</p>
+      <p>🆓 Free Used: ${localStorage.getItem("usedFree")||0}</p>
+      <p>💎 VIP Level: ${localStorage.getItem("vipLevel")||"None"}</p>
+      <p>🚀 VIP Used: ${localStorage.getItem("usedVIP")||0}</p>
+    </div>`;
+}
+
+/* ================= KEY STATUS ================= */
+function loadKeys(){
+  const activeKey = localStorage.getItem("activatedKey");
+
+  renderKeyGroup("lifeKeys", KEYS.lifetime, activeKey);
+  renderKeyGroup("monthKeys", KEYS.monthly, activeKey);
+  renderKeyGroup("weekKeys", KEYS.weekly, activeKey);
+}
+
+function renderKeyGroup(id, list, activeKey){
+  const box=document.getElementById(id);
+  box.innerHTML="";
+  list.forEach(k=>{
+    const on = k===activeKey;
+    box.innerHTML+=`
+      <div class="key-row">
+        <span class="dot ${on?'green':'red'}"></span>
+        ${k}
+      </div>`;
+  });
+}
+</script>
+
+</body>
+</html>
